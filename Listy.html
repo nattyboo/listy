@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Listy</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000000;
+    --surface: #1c1c1e;
+    --surface2: #2c2c2e;
+    --surface3: #3a3a3c;
+    --accent: #30d158;
+    --blue: #0a84ff;
+    --red: #ff453a;
+    --orange: #ff9f0a;
+    --text: #ffffff;
+    --text2: rgba(235,235,245,0.8);
+    --muted: #8e8e93;
+    --separator: #38383a;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Nunito', -apple-system, sans-serif;
+    min-height: 100dvh;
+    max-width: 430px;
+    margin: 0 auto;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: rgba(0,0,0,0.9);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    padding: 54px 16px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--separator);
+  }
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 14px;
+  }
+  .app-title { font-size: 32px; font-weight: 900; letter-spacing: -1px; line-height: 1; }
+  .app-title span { color: var(--accent); }
+  .budget-pill {
+    display: flex; align-items: center; gap: 5px;
+    background: var(--surface); border: 1px solid var(--separator);
+    border-radius: 20px; padding: 7px 14px;
+    cursor: pointer; transition: opacity 0.15s;
+  }
+  .budget-pill:active { opacity: 0.6; }
+  .budget-pill-label { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .budget-pill-value { font-size: 15px; font-weight: 800; color: var(--accent); }
+
+  /* Budget card */
+  .budget-card {
+    background: var(--surface); border-radius: var(--radius);
+    padding: 14px 16px; margin-bottom: 12px; border: 1px solid var(--separator);
+  }
+  .budget-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; margin-bottom: 12px; }
+  .stat { text-align: center; }
+  .stat + .stat { border-left: 1px solid var(--separator); }
+  .stat-label { font-size: 10px; color: var(--muted); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+  .stat-value { font-size: 19px; font-weight: 900; margin-top: 3px; letter-spacing: -0.5px; color: var(--text); }
+  .stat-value.green { color: var(--accent); }
+  .stat-value.red { color: var(--red); }
+  .stat-value.orange { color: var(--orange); }
+  .stat-value.blue { color: var(--blue); }
+  .stat-sub { font-size: 9px; color: var(--muted); margin-top: 1px; font-weight: 600; }
+  .progress-track { background: var(--surface2); border-radius: 6px; height: 8px; overflow: hidden; }
+  .progress-fill {
+    height: 100%; border-radius: 6px; background: var(--accent);
+    transition: width 0.4s cubic-bezier(.4,0,.2,1), background 0.3s;
+  }
+  .progress-fill.orange { background: var(--orange); }
+  .progress-fill.red { background: var(--red); }
+
+  /* Tabs */
+  .seg-wrap {
+    background: var(--surface2); border-radius: 10px;
+    padding: 2px; display: flex; margin-bottom: 12px;
+  }
+  .seg-btn {
+    flex: 1; border: none; background: transparent;
+    font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700; color: var(--muted);
+    padding: 7px 4px; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+  }
+  .seg-btn.active { background: var(--surface3); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+  .seg-badge {
+    font-size: 10px; font-weight: 800; border-radius: 10px;
+    padding: 1px 5px; min-width: 16px; text-align: center;
+    background: var(--muted); color: var(--bg);
+  }
+  .seg-btn.active .seg-badge { background: var(--accent); color: var(--bg); }
+
+  /* Content */
+  .content { padding: 12px 16px 120px; }
+
+  /* Add form */
+  .add-form {
+    background: var(--surface); border-radius: var(--radius);
+    margin-bottom: 20px; border: 1px solid var(--separator);
+  }
+  .add-form-inner { display: flex; align-items: center; padding: 4px 8px 4px 14px; }
+  .add-form-inner input {
+    flex: 1; border: none; background: transparent;
+    font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 600; color: var(--text);
+    padding: 11px 0; outline: none;
+  }
+  .add-form-inner input::placeholder { color: var(--muted); font-weight: 500; }
+  .add-btn {
+    background: var(--accent); border: none; border-radius: 50%;
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 22px; color: var(--bg); font-weight: 400;
+    transition: transform 0.15s, opacity 0.15s; flex-shrink: 0;
+  }
+  .add-btn:active { transform: scale(0.88); opacity: 0.8; }
+
+  .section-label {
+    font-size: 11px; font-weight: 800; color: var(--muted);
+    letter-spacing: 0.8px; text-transform: uppercase; padding: 0 4px; margin-bottom: 8px;
+  }
+  .section-hint {
+    font-size: 12px; color: var(--muted); font-weight: 500;
+    padding: 0 4px; margin-bottom: 10px; line-height: 1.4;
+  }
+  .section-hint span { color: var(--accent); font-weight: 700; }
+
+  /* Item list */
+  .list-card {
+    background: var(--surface); border-radius: var(--radius);
+    overflow: hidden; border: 1px solid var(--separator); margin-bottom: 16px;
+  }
+  .item-row {
+    display: flex; align-items: center;
+    padding: 11px 14px; gap: 12px;
+    animation: fadeSlide 0.2s ease; position: relative;
+  }
+  .item-row + .item-row::before {
+    content: ''; position: absolute; top: 0; left: 14px; right: 0;
+    height: 1px; background: var(--separator);
+  }
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .item-name {
+    flex: 1; font-size: 16px; font-weight: 600; color: var(--text);
+    min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* Price input on list */
+  .price-input-wrap { position: relative; display: flex; align-items: center; }
+  .price-prefix {
+    position: absolute; left: 9px;
+    color: var(--muted); font-size: 14px; font-weight: 700;
+    pointer-events: none; z-index: 1;
+  }
+  .price-input {
+    width: 82px; background: var(--surface2);
+    border: 1.5px solid var(--separator); border-radius: 9px;
+    font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700; color: var(--text);
+    padding: 7px 8px 7px 22px; outline: none; text-align: right;
+    -webkit-appearance: none; transition: border-color 0.2s, background 0.2s;
+  }
+  .price-input:focus { border-color: var(--accent); background: var(--surface3); }
+  .price-input::placeholder { color: var(--muted); font-weight: 500; font-size: 13px; }
+
+  /* Cart item row — shows price + uncheck */
+  .cart-item-name {
+    flex: 1; font-size: 16px; font-weight: 600; color: var(--text2);
+    min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .cart-price-tag {
+    font-size: 15px; font-weight: 800; color: var(--accent);
+    min-width: 58px; text-align: right;
+  }
+  .cart-price-tag.no-price { color: var(--muted); font-size: 12px; font-weight: 600; }
+
+  .uncheck-btn {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: none; background: var(--accent);
+    cursor: pointer; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: var(--bg); font-weight: 800;
+    transition: all 0.2s;
+  }
+  .uncheck-btn:active { transform: scale(0.88); opacity: 0.75; }
+
+  .edit-price-btn {
+    background: var(--surface2); border: 1px solid var(--separator);
+    border-radius: 7px; color: var(--muted);
+    font-family: 'Nunito', sans-serif; font-size: 12px; font-weight: 700;
+    padding: 4px 9px; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .edit-price-btn:active { background: var(--surface3); color: var(--text); }
+
+  .delete-btn {
+    background: transparent; border: none; color: var(--surface3);
+    font-size: 20px; cursor: pointer; padding: 2px 0 2px 6px;
+    line-height: 1; flex-shrink: 0; transition: color 0.15s;
+  }
+  .delete-btn:active { color: var(--red); }
+
+  /* Inline price editor on cart */
+  .inline-edit-wrap { position: relative; display: flex; align-items: center; }
+  .inline-edit-wrap .price-prefix { left: 9px; }
+  .inline-price-input {
+    width: 82px; background: var(--surface3);
+    border: 1.5px solid var(--accent); border-radius: 9px;
+    font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700; color: var(--text);
+    padding: 7px 8px 7px 22px; outline: none; text-align: right;
+    -webkit-appearance: none;
+  }
+
+  /* Empty state */
+  .empty-state { text-align: center; padding: 36px 20px; }
+  .empty-icon { font-size: 44px; margin-bottom: 10px; }
+  .empty-title { font-size: 17px; font-weight: 700; color: var(--text2); }
+  .empty-sub { font-size: 14px; margin-top: 5px; color: var(--muted); font-weight: 500; line-height: 1.4; }
+
+  /* Cart footer */
+  .cart-footer {
+    background: var(--surface); border-radius: var(--radius);
+    padding: 4px 16px; border: 1px solid var(--separator); margin-bottom: 12px;
+  }
+  .footer-row {
+    display: flex; justify-content: space-between; align-items: center; padding: 11px 0;
+  }
+  .footer-row + .footer-row { border-top: 1px solid var(--separator); }
+  .footer-label { font-size: 14px; font-weight: 600; color: var(--muted); }
+  .footer-val { font-size: 15px; font-weight: 800; color: var(--text); }
+  .footer-val.green { color: var(--accent); }
+  .footer-val.red { color: var(--red); }
+  .footer-val.orange { color: var(--orange); }
+  .footer-val.muted { color: var(--muted); font-weight: 600; }
+
+  .save-cart-btn {
+    width: 100%; background: var(--accent); border: none; border-radius: 11px;
+    font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 800; color: var(--bg);
+    padding: 14px; cursor: pointer; margin-bottom: 16px;
+    transition: opacity 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .save-cart-btn:active { opacity: 0.75; }
+
+  /* History */
+  .hist-card {
+    background: var(--surface); border-radius: var(--radius);
+    border: 1px solid var(--separator); margin-bottom: 12px; overflow: hidden;
+  }
+  .hist-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; cursor: pointer; transition: background 0.15s;
+  }
+  .hist-header:active { background: var(--surface2); }
+  .hist-meta { flex: 1; min-width: 0; }
+  .hist-store { font-size: 16px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hist-date { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+  .hist-total { font-size: 18px; font-weight: 900; color: var(--accent); margin-left: 12px; flex-shrink: 0; }
+  .hist-chev { color: var(--muted); font-size: 16px; margin-left: 8px; flex-shrink: 0; transition: transform 0.2s; }
+  .hist-chev.open { transform: rotate(90deg); }
+  .hist-items { border-top: 1px solid var(--separator); display: none; }
+  .hist-items.open { display: block; }
+  .hist-item-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 16px; font-size: 14px;
+  }
+  .hist-item-row + .hist-item-row { border-top: 1px solid var(--separator); }
+  .hist-item-name { color: var(--text2); font-weight: 600; flex: 1; }
+  .hist-item-price { font-weight: 800; color: var(--text); }
+  .hist-item-price.none { color: var(--muted); font-weight: 500; font-size: 13px; }
+  .hist-summary {
+    background: var(--surface2); padding: 12px 16px;
+    border-top: 1px solid var(--separator);
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+  }
+  .hist-sum-col { text-align: center; }
+  .hist-sum-col:first-child { text-align: left; }
+  .hist-sum-col:last-child { text-align: right; }
+  .hist-sum-label { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+  .hist-sum-val { font-size: 14px; font-weight: 800; color: var(--text); margin-top: 2px; }
+  .hist-sum-val.green { color: var(--accent); }
+  .hist-del-row { display: flex; justify-content: flex-end; padding: 10px 14px; border-top: 1px solid var(--separator); }
+  .hist-del-btn {
+    background: rgba(255,69,58,0.15); border: 1px solid rgba(255,69,58,0.3);
+    border-radius: 9px; font-family: 'Nunito', sans-serif;
+    font-size: 13px; font-weight: 800; color: var(--red);
+    padding: 7px 14px; cursor: pointer; transition: all 0.15s;
+  }
+  .hist-del-btn:active { background: rgba(255,69,58,0.3); }
+
+  /* Modals */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+    z-index: 200; display: flex; align-items: flex-end;
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  }
+  .modal-backdrop.hidden { display: none; }
+  .modal {
+    background: var(--surface); border-radius: 20px 20px 0 0;
+    border: 1px solid var(--separator); border-bottom: none;
+    padding: 20px 24px 50px; width: 100%;
+  }
+  .modal-handle { width: 36px; height: 4px; background: var(--surface3); border-radius: 2px; margin: 0 auto 20px; }
+  .modal-title { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
+  .modal-sub { font-size: 14px; color: var(--muted); font-weight: 500; margin-bottom: 18px; }
+  .modal-text-input {
+    width: 100%; background: var(--surface2);
+    border: 1.5px solid var(--separator); border-radius: 13px;
+    font-family: 'Nunito', sans-serif; font-size: 20px; font-weight: 700; color: var(--text);
+    padding: 14px 16px; outline: none; -webkit-appearance: none;
+    transition: border-color 0.2s; margin-bottom: 14px;
+  }
+  .modal-text-input:focus { border-color: var(--accent); }
+  .modal-text-input::placeholder { color: var(--muted); font-size: 17px; font-weight: 500; }
+  .modal-num-wrap { position: relative; margin-bottom: 14px; }
+  .modal-dollar { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 22px; font-weight: 700; color: var(--muted); pointer-events: none; }
+  .modal-num-input {
+    width: 100%; background: var(--surface2);
+    border: 1.5px solid var(--separator); border-radius: 13px;
+    font-family: 'Nunito', sans-serif; font-size: 28px; font-weight: 900; color: var(--text);
+    padding: 13px 16px 13px 38px; outline: none; -webkit-appearance: none;
+    transition: border-color 0.2s;
+  }
+  .modal-num-input:focus { border-color: var(--accent); }
+  .modal-cta {
+    width: 100%; background: var(--accent); border: none; border-radius: 13px;
+    font-family: 'Nunito', sans-serif; font-size: 17px; font-weight: 800;
+    color: var(--bg); padding: 15px; cursor: pointer; transition: opacity 0.15s;
+  }
+  .modal-cta:active { opacity: 0.8; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- Budget Modal -->
+<div class="modal-backdrop" id="budgetModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Set Your Budget</div>
+    <div class="modal-sub">How much are you spending on this trip?</div>
+    <div class="modal-num-wrap">
+      <span class="modal-dollar">$</span>
+      <input class="modal-num-input" type="number" id="budgetInput" placeholder="0.00" step="0.01" min="0" inputmode="decimal">
+    </div>
+    <button class="modal-cta" onclick="setBudget()">Save Budget</button>
+  </div>
+</div>
+
+<!-- Save Trip Modal -->
+<div class="modal-backdrop hidden" id="saveModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Save This Trip</div>
+    <div class="modal-sub">Name it so you can compare prices later (e.g. "Whole Foods", "Trader Joe's")</div>
+    <input class="modal-text-input" type="text" id="storeInput" placeholder="Store name…" maxlength="40" autocomplete="off">
+    <button class="modal-cta" onclick="confirmSave()">Save Trip to History</button>
+  </div>
+</div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-row">
+    <div class="app-title">Listy<span>.</span></div>
+    <div class="budget-pill" onclick="openBudgetModal()">
+      <span class="budget-pill-label">Budget</span>
+      <span class="budget-pill-value" id="budgetPillVal">Set →</span>
+    </div>
+  </div>
+  <div class="budget-card">
+    <div class="budget-stats">
+      <div class="stat">
+        <div class="stat-label">Budget</div>
+        <div class="stat-value blue" id="budgetDisplay">—</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Cart + Tax</div>
+        <div class="stat-value" id="totalDisplay">$0.00</div>
+        <div class="stat-sub" id="totalSub"></div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Left</div>
+        <div class="stat-value green" id="remainingDisplay">—</div>
+      </div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressBar" style="width:0%"></div>
+    </div>
+  </div>
+  <div class="seg-wrap">
+    <button class="seg-btn active" id="tab-list" onclick="switchTab('list')">List <span class="seg-badge" id="listBadge">0</span></button>
+    <button class="seg-btn" id="tab-cart" onclick="switchTab('cart')">Cart <span class="seg-badge" id="cartBadge">0</span></button>
+    <button class="seg-btn" id="tab-history" onclick="switchTab('history')">History <span class="seg-badge" id="histBadge">0</span></button>
+  </div>
+</div>
+
+<div class="content">
+  <!-- Add form -->
+  <div class="add-form" id="addFormWrap">
+    <div class="add-form-inner">
+      <input type="text" id="itemName" placeholder="Add an item…" maxlength="50" autocomplete="off" autocorrect="off">
+      <button class="add-btn" onclick="addItem()">+</button>
+    </div>
+  </div>
+
+  <!-- LIST TAB -->
+  <div id="view-list">
+    <div class="section-label">Shopping List</div>
+    <div class="section-hint">Enter a price → item moves to <span>Cart</span> automatically</div>
+    <div class="list-card">
+      <div id="listItems"></div>
+      <div class="empty-state hidden" id="listEmpty">
+        <div class="empty-icon">📝</div>
+        <div class="empty-title">Your list is empty</div>
+        <div class="empty-sub">Type an item above and tap + to add it</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CART TAB -->
+  <div id="view-cart" style="display:none">
+    <div class="section-label">In Your Cart</div>
+    <div class="list-card">
+      <div id="cartItems"></div>
+      <div class="empty-state hidden" id="cartEmpty">
+        <div class="empty-icon">🛒</div>
+        <div class="empty-title">Cart is empty</div>
+        <div class="empty-sub">Enter a price next to any item on your List — it'll appear here automatically</div>
+      </div>
+    </div>
+    <div class="cart-footer hidden" id="cartFooter">
+      <div class="footer-row"><span class="footer-label">Subtotal</span><span class="footer-val" id="fSubtotal">$0.00</span></div>
+      <div class="footer-row"><span class="footer-label">Tax (10%)</span><span class="footer-val" id="fTax">$0.00</span></div>
+      <div class="footer-row"><span class="footer-label">Total with tax</span><span class="footer-val" id="fTotal" style="font-size:18px">$0.00</span></div>
+      <div class="footer-row"><span class="footer-label">Items without price</span><span class="footer-val muted" id="fUnpriced">0</span></div>
+      <div class="footer-row"><span class="footer-label">Remaining budget</span><span class="footer-val green" id="fRemaining">—</span></div>
+    </div>
+    <button class="save-cart-btn hidden" id="saveBtn" onclick="openSaveModal()">💾 Save Trip to History</button>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div id="view-history" style="display:none">
+    <div class="section-label">Previous Trips</div>
+    <div id="historyList"></div>
+    <div class="empty-state hidden" id="histEmpty">
+      <div class="empty-icon">🗂️</div>
+      <div class="empty-title">No saved trips yet</div>
+      <div class="empty-sub">After shopping, tap "Save Trip to History" from the Cart tab to save it here for price comparison</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TAX = 0.10;
+let budget = 0, items = [], history = [], currentTab = 'list';
+// editingCartId tracks which cart item is showing inline price editor
+let editingCartId = null;
+
+try {
+  items = JSON.parse(localStorage.getItem('listy_items') || '[]');
+  history = JSON.parse(localStorage.getItem('listy_history') || '[]');
+  const b = parseFloat(localStorage.getItem('listy_budget') || '0');
+  if (b > 0) { budget = b; document.getElementById('budgetModal').classList.add('hidden'); }
+} catch(e) {}
+
+function save() {
+  try {
+    localStorage.setItem('listy_items', JSON.stringify(items));
+    localStorage.setItem('listy_history', JSON.stringify(history));
+    localStorage.setItem('listy_budget', budget);
+  } catch(e) {}
+}
+
+/* ── Budget ── */
+function openBudgetModal() {
+  document.getElementById('budgetInput').value = budget || '';
+  document.getElementById('budgetModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('budgetInput').focus(), 150);
+}
+function setBudget() {
+  const v = parseFloat(document.getElementById('budgetInput').value);
+  if (!v || v <= 0) return;
+  budget = v; save();
+  document.getElementById('budgetModal').classList.add('hidden');
+  updateDisplay();
+}
+document.getElementById('budgetInput').addEventListener('keydown', e => { if(e.key==='Enter') setBudget(); });
+
+/* ── Items ── */
+function addItem() {
+  const el = document.getElementById('itemName');
+  const name = el.value.trim();
+  if (!name) { el.focus(); return; }
+  items.unshift({ id: Date.now(), name, price: null, inCart: false });
+  el.value = ''; el.focus(); save(); render();
+}
+document.getElementById('itemName').addEventListener('keydown', e => { if(e.key==='Enter') addItem(); });
+
+function deleteItem(id) { items = items.filter(i => i.id !== id); save(); render(); }
+
+// Called when price is entered on the LIST — moves to cart
+function commitListPrice(id, val) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  const parsed = parseFloat(val);
+  if (!isNaN(parsed) && parsed >= 0) {
+    item.price = parsed;
+    item.inCart = true;
+    save(); render();
+    // Auto-switch to cart so user sees it land
+    // (only if they haven't navigated away)
+    if (currentTab === 'list') {
+      // brief flash then switch
+      setTimeout(() => switchTab('cart'), 180);
+    }
+  }
+}
+
+// Called when price edited from the CART
+function updateCartPrice(id, val) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  const parsed = parseFloat(val);
+  item.price = (!isNaN(parsed) && parsed >= 0) ? parsed : null;
+  editingCartId = null;
+  save(); render();
+}
+
+// Move item back to list from cart
+function uncartItem(id) {
+  const item = items.find(i => i.id === id);
+  if (item) { item.inCart = false; item.price = null; save(); render(); }
+}
+
+/* ── Save trip ── */
+function openSaveModal() {
+  document.getElementById('storeInput').value = '';
+  document.getElementById('saveModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('storeInput').focus(), 150);
+}
+document.getElementById('storeInput').addEventListener('keydown', e => { if(e.key==='Enter') confirmSave(); });
+document.getElementById('saveModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('saveModal')) document.getElementById('saveModal').classList.add('hidden');
+});
+function confirmSave() {
+  const store = document.getElementById('storeInput').value.trim() || 'Shopping Trip';
+  const ci = items.filter(i => i.inCart);
+  const sub = ci.reduce((s,i) => s+(i.price||0), 0);
+  const tax = sub * TAX;
+  history.unshift({
+    id: Date.now(), store,
+    date: new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}),
+    subtotal: sub, tax, total: sub+tax, budget,
+    items: ci.map(i => ({name:i.name, price:i.price}))
+  });
+  items.forEach(i => { if(i.inCart) { i.inCart=false; i.price=null; } });
+  save();
+  document.getElementById('saveModal').classList.add('hidden');
+  render(); switchTab('history');
+}
+function deleteHistory(id) { history = history.filter(h => h.id !== id); save(); renderHistory(); }
+
+/* ── Tab switch ── */
+function switchTab(tab) {
+  currentTab = tab;
+  ['list','cart','history'].forEach(t => {
+    document.getElementById('view-'+t).style.display = t===tab ? '' : 'none';
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+  });
+  document.getElementById('addFormWrap').style.display = tab==='history' ? 'none' : '';
+}
+
+/* ── Display ── */
+function updateDisplay() {
+  const ci = items.filter(i => i.inCart);
+  const sub = ci.reduce((s,i) => s+(i.price||0), 0);
+  const tax = sub * TAX;
+  const total = sub + tax;
+  const rem = budget > 0 ? budget - total : null;
+  const pct = budget > 0 ? Math.min((total/budget)*100,100) : 0;
+  const unpriced = ci.filter(i => i.price===null).length;
+
+  document.getElementById('budgetPillVal').textContent = budget>0 ? '$'+budget.toFixed(0) : 'Set →';
+  document.getElementById('budgetDisplay').textContent = budget>0 ? '$'+budget.toFixed(0) : '—';
+  document.getElementById('totalDisplay').textContent = '$'+total.toFixed(2);
+  document.getElementById('totalSub').textContent = sub>0 ? 'incl. 10% tax' : '';
+
+  const remEl = document.getElementById('remainingDisplay');
+  if (rem===null) { remEl.textContent='—'; remEl.className='stat-value'; }
+  else { remEl.textContent=(rem<0?'-$':'$')+Math.abs(rem).toFixed(2); remEl.className='stat-value '+(rem<0?'red':rem<budget*0.15?'orange':'green'); }
+
+  const bar = document.getElementById('progressBar');
+  bar.style.width = pct+'%';
+  bar.className = 'progress-fill'+(pct>=100?' red':pct>=80?' orange':'');
+
+  document.getElementById('listBadge').textContent = items.filter(i=>!i.inCart).length;
+  document.getElementById('cartBadge').textContent = ci.length;
+  document.getElementById('histBadge').textContent = history.length;
+
+  document.getElementById('fSubtotal').textContent = '$'+sub.toFixed(2);
+  document.getElementById('fTax').textContent = '$'+tax.toFixed(2);
+  document.getElementById('fTotal').textContent = '$'+total.toFixed(2);
+  document.getElementById('fUnpriced').textContent = unpriced>0 ? unpriced+' item'+(unpriced!==1?'s':'') : 'None ✓';
+  const fr = document.getElementById('fRemaining');
+  if (rem===null) { fr.textContent='No budget set'; fr.className='footer-val muted'; }
+  else { fr.textContent=(rem<0?'-$':'$')+Math.abs(rem).toFixed(2); fr.className='footer-val '+(rem<0?'red':rem<budget*0.15?'orange':'green'); }
+  document.getElementById('cartFooter').classList.toggle('hidden', ci.length===0);
+  document.getElementById('saveBtn').classList.toggle('hidden', ci.length===0);
+}
+
+/* ── Row builders ── */
+
+// List row: name + price input (not yet in cart)
+function makeListRow(item) {
+  const row = document.createElement('div');
+  row.className = 'item-row';
+
+  const name = document.createElement('div');
+  name.className = 'item-name';
+  name.textContent = item.name;
+
+  const right = document.createElement('div');
+  right.style.cssText = 'display:flex;align-items:center;gap:8px;';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'price-input-wrap';
+
+  const prefix = document.createElement('span');
+  prefix.className = 'price-prefix';
+  prefix.textContent = '$';
+
+  const inp = document.createElement('input');
+  inp.type = 'number';
+  inp.className = 'price-input';
+  inp.placeholder = 'add price';
+  inp.step = '0.01'; inp.min = '0'; inp.inputMode = 'decimal';
+
+  // On blur or Enter: commit → moves to cart
+  const commit = () => {
+    const v = inp.value.trim();
+    if (v !== '' && !isNaN(parseFloat(v)) && parseFloat(v) >= 0) {
+      commitListPrice(item.id, v);
+    }
+  };
+  inp.addEventListener('blur', commit);
+  inp.addEventListener('keydown', e => { if(e.key==='Enter') { inp.blur(); } });
+
+  wrap.appendChild(prefix);
+  wrap.appendChild(inp);
+
+  const del = document.createElement('button');
+  del.className = 'delete-btn'; del.textContent = '⊖';
+  del.onmousedown = e => e.preventDefault(); // prevent blur before delete
+  del.onclick = () => deleteItem(item.id);
+
+  right.appendChild(wrap);
+  right.appendChild(del);
+  row.appendChild(name);
+  row.appendChild(right);
+  return row;
+}
+
+// Cart row: green check, name, price tag, edit/uncheck
+function makeCartRow(item) {
+  const row = document.createElement('div');
+  row.className = 'item-row';
+
+  const uncheck = document.createElement('button');
+  uncheck.className = 'uncheck-btn';
+  uncheck.title = 'Move back to list';
+  uncheck.textContent = '✓';
+  uncheck.onclick = () => uncartItem(item.id);
+
+  const name = document.createElement('div');
+  name.className = 'cart-item-name';
+  name.textContent = item.name;
+
+  const right = document.createElement('div');
+  right.style.cssText = 'display:flex;align-items:center;gap:8px;';
+
+  if (editingCartId === item.id) {
+    // Show inline editor
+    const wrap = document.createElement('div');
+    wrap.className = 'inline-edit-wrap';
+    const prefix = document.createElement('span');
+    prefix.className = 'price-prefix'; prefix.textContent = '$';
+    const inp = document.createElement('input');
+    inp.type='number'; inp.className='inline-price-input';
+    inp.step='0.01'; inp.min='0'; inp.inputMode='decimal';
+    if (item.price !== null) inp.value = item.price.toFixed(2);
+    inp.addEventListener('blur', () => updateCartPrice(item.id, inp.value));
+    inp.addEventListener('keydown', e => { if(e.key==='Enter') inp.blur(); });
+    wrap.appendChild(prefix); wrap.appendChild(inp);
+    right.appendChild(wrap);
+    // auto-focus
+    setTimeout(() => inp.focus(), 30);
+  } else {
+    const priceTag = document.createElement('div');
+    priceTag.className = item.price !== null ? 'cart-price-tag' : 'cart-price-tag no-price';
+    priceTag.textContent = item.price !== null ? '$'+item.price.toFixed(2) : 'no price';
+    priceTag.style.cursor = 'pointer';
+    priceTag.title = 'Tap to edit price';
+    priceTag.onclick = () => { editingCartId = item.id; render(); };
+    right.appendChild(priceTag);
+  }
+
+  const del = document.createElement('button');
+  del.className = 'delete-btn'; del.textContent = '⊖';
+  del.onmousedown = e => e.preventDefault();
+  del.onclick = () => deleteItem(item.id);
+  right.appendChild(del);
+
+  row.appendChild(uncheck);
+  row.appendChild(name);
+  row.appendChild(right);
+  return row;
+}
+
+/* ── History ── */
+function renderHistory() {
+  const el = document.getElementById('historyList');
+  el.innerHTML = '';
+  document.getElementById('histBadge').textContent = history.length;
+  document.getElementById('histEmpty').classList.toggle('hidden', history.length > 0);
+
+  history.forEach(trip => {
+    const card = document.createElement('div');
+    card.className = 'hist-card';
+    const header = document.createElement('div');
+    header.className = 'hist-header';
+    header.innerHTML = `
+      <div class="hist-meta">
+        <div class="hist-store">${trip.store}</div>
+        <div class="hist-date">${trip.date}${trip.budget?' · Budget: $'+trip.budget.toFixed(0):''}</div>
+      </div>
+      <div class="hist-total">$${trip.total.toFixed(2)}</div>
+      <div class="hist-chev" id="chev-${trip.id}">›</div>
+    `;
+    const body = document.createElement('div');
+    body.className = 'hist-items';
+    trip.items.forEach(it => {
+      const r = document.createElement('div');
+      r.className = 'hist-item-row';
+      r.innerHTML = `<span class="hist-item-name">${it.name}</span><span class="hist-item-price ${it.price===null?'none':''}">${it.price!==null?'$'+it.price.toFixed(2):'no price'}</span>`;
+      body.appendChild(r);
+    });
+    const summary = document.createElement('div');
+    summary.className = 'hist-summary';
+    summary.innerHTML = `
+      <div class="hist-sum-col"><div class="hist-sum-label">Subtotal</div><div class="hist-sum-val">$${trip.subtotal.toFixed(2)}</div></div>
+      <div class="hist-sum-col"><div class="hist-sum-label">Tax (10%)</div><div class="hist-sum-val">$${trip.tax.toFixed(2)}</div></div>
+      <div class="hist-sum-col"><div class="hist-sum-label">Total</div><div class="hist-sum-val green">$${trip.total.toFixed(2)}</div></div>
+    `;
+    body.appendChild(summary);
+    const delRow = document.createElement('div');
+    delRow.className = 'hist-del-row';
+    const delBtn = document.createElement('button');
+    delBtn.className = 'hist-del-btn'; delBtn.textContent = 'Delete Trip';
+    delBtn.onclick = e => { e.stopPropagation(); deleteHistory(trip.id); };
+    delRow.appendChild(delBtn); body.appendChild(delRow);
+    header.addEventListener('click', () => {
+      const open = body.classList.toggle('open');
+      document.getElementById('chev-'+trip.id).classList.toggle('open', open);
+    });
+    card.appendChild(header); card.appendChild(body);
+    el.appendChild(card);
+  });
+}
+
+/* ── Main render ── */
+function render() {
+  const listEl = document.getElementById('listItems');
+  const cartEl = document.getElementById('cartItems');
+  listEl.innerHTML = ''; cartEl.innerHTML = '';
+
+  const listItems = items.filter(i => !i.inCart);
+  const cartItemsList = items.filter(i => i.inCart);
+
+  listItems.forEach(i => listEl.appendChild(makeListRow(i)));
+  cartItemsList.forEach(i => cartEl.appendChild(makeCartRow(i)));
+
+  document.getElementById('listEmpty').classList.toggle('hidden', listItems.length > 0);
+  document.getElementById('cartEmpty').classList.toggle('hidden', cartItemsList.length > 0);
+
+  renderHistory();
+  updateDisplay();
+}
+
+render();
+</script>
+</body>
+</html>
